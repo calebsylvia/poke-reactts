@@ -5,7 +5,7 @@ import change from '../Assets/Vector (1) (1).png'
 import heart from '../Assets/Heart.png'
 import minus from '../Assets/MinusCircle.png'
 import { locatePokemon, getData, getRandomPokemon } from '../DataServices/DataCall'
-import { ILocation, ILocationArray, IPokemon } from '../Interfaces/interfaces'
+import { IPokemon, Ability } from '../Interfaces/interfaces'
 import './PokeSearch.css'
 
 
@@ -13,19 +13,20 @@ import './PokeSearch.css'
 const PokeSearch = () => {
   
 
-  const [input, setInput] = useState<string | number>(2)
+  const [input, setInput] = useState<string | number>(1)
   const [searchPoke, setSearchPoke] = useState<string | number>(1)
   const [pokemon, setPokemon] = useState<IPokemon | null>(null)
-  const [pokeName, setPokeName] = useState('Bulbasaur No.1')
-  const [pokeImg, setPokeImg] = useState<string>()
-  const [shiny, setShiny] = useState(false)
-  const [pokeType, setPokeType] = useState([])
-  const [location, setLocation] = useState('')
+  const [pokeName, setPokeName] = useState<string>('Bulbasaur No.1')
+  const [pokeImg, setPokeImg] = useState<string>('')
+  const [shiny, setShiny] = useState<boolean>(false)
+  const [pokeType, setPokeType] = useState('')
+  const [location, setLocation] = useState<string>('')
   const [moves, setMoves] = useState('')
-  const [abilities, setAbilities] = useState([])
+  const [abilities, setAbilities] = useState('')
   const [evos, setEvos] = useState([])
 
 
+  
   
 
   const handleFavorite = () => {
@@ -35,52 +36,72 @@ const PokeSearch = () => {
   const handleRandom = () => {
     const getRandom = async() => {
       const random = await getRandomPokemon()
-      setPokemon(random)
-      setInput('')
+      setInput(random.name)
     }
     getRandom();
   }
 
   const handleShiny = () => {
-
+      if(!shiny){
+        setShiny(true)
+      }else{
+        setShiny(false)
+      }
   }
 
   useEffect(() => {
+  
+    
     const getPokeData = async() => {
       const data = await getData(input)
       setPokemon(data)
+      // const pokeLocate = await locatePokemon(data.name)
+      // setLocation(pokeLocate[0].location_area.name.toUpperCase().replaceAll("-", " "))
     }
     getPokeData()
 
     if(pokemon){
-      let pokeMoves = pokemon?.moves
-      let pokeMovesDisplay = pokeMoves?.map(e => (e.move.name).toUpperCase().replaceAll("-", " "))
-      setMoves(pokeMovesDisplay.join("\n"))
+      let pokeMoves = pokemon.moves
+      let pokeMovesDisplay = pokeMoves.map(e => (e.move.name).toUpperCase().replaceAll("-", " "))
+      setMoves(pokeMovesDisplay.join(" | "))
+
+      let pokeAbil = pokemon.abilities
+      let pokeAbilDisplay = pokeAbil.map(e => (e.ability.name).toUpperCase().replaceAll("-", " "))
+      setAbilities(pokeAbilDisplay.join(" | "))
+
+      let pokemonType = pokemon.types
+      let pokeTypeDisplay = pokemonType.map(e => (e.type.name).toUpperCase())
+      setPokeType(pokeTypeDisplay.join(" "))
+      
     }
 
-    if(pokemon && pokemon.sprites.other){
+    if(pokemon && pokemon.sprites.other && shiny == false){
       setPokeImg(pokemon.sprites.other['official-artwork'].front_default)
+    }else if(pokemon && pokemon.sprites.other && shiny == true){
+      setPokeImg(pokemon.sprites.other['official-artwork'].front_shiny)
+    }else{
+      setPokeImg('')
     }
+
+    
+    
   }, [pokemon])
 
-  // useEffect(() => {
-  //     const getData = async() => {
-  //       if(pokemon) {
-  //         const location = await locatePokemon(input);
-  //         setLocation(`LOCATION: ${location}`)
-  //       }
-  //     }
-  //     getData();
-  // }, [pokeImg])
 
 
 
   return (
-    <div className="font-text">
+    <div className="font-text space-y-5">
       {/* Navbar */}
       <div className='lg:flex mt-10 ml-0 lg:ml-10 relative lg:static max-lg:text-center'>
         <p className="text-5xl md:text-7xl lg:text-8xl my-auto max-[426px]:text-center text-nowrap">POK&#xc9;-SEARCH</p>
-        <input className="w-64 md:w-[500px] h-10 rounded-xl my-auto lg:ml-10 2xl:ml-[475px] px-5" type="search" id="searchBar" placeholder="SEARCH POKEMON NAME OR NO." onChange={(e) => {setInput(e.target.value)}}></input>
+        <input className="w-64 md:w-[500px] h-10 rounded-xl my-auto lg:ml-10 2xl:ml-[475px] px-5" type="search" id="searchBar" placeholder="SEARCH POKEMON NAME OR NO."  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement> | React.ChangeEvent<HTMLInputElement>) => {if((e as React.KeyboardEvent<HTMLInputElement>).key === "Enter"){
+          setSearchPoke((e as React.ChangeEvent<HTMLInputElement>).target.value)
+          if(searchPoke !== ''){
+            setInput(searchPoke)
+          }
+          (e as React.ChangeEvent<HTMLInputElement>).target.value = ''
+        }}}></input>
         <button id="favList" className="w-12 md:w-24 lg:pl-20 xl:pl-5 absolute lg:static top-10 md:top-10 lg:top-0 right-5 md:right-[-30px] lg:right-0" type="button" data-drawer-target="drawer-right-example" data-drawer-show="drawer-right-example" data-drawer-placement="right" aria-controls="drawer-right-example" data-drawer-backdrop="false">
                 <img src={heart} alt="Heart Favorite Button"/>
             </button>
@@ -103,7 +124,7 @@ const PokeSearch = () => {
       {/* Main Display */}
       <div className="columns-1 lg:columns-2 mt-10">
         <div className="text-center space-y-3 text-3xl">
-            <p id="pokeName">{pokemon?.name.toUpperCase()}</p>
+            <p id="pokeName">{`${pokemon?.name.toUpperCase()} NO.${pokemon?.id}`}</p>
             <div className="flex justify-center space-x-3">
                 <p id="skin">SKIN</p>
                 <button className="w-5" onClick={handleShiny}>
@@ -145,20 +166,18 @@ const PokeSearch = () => {
 
     <div className="columns-1 lg:columns-2 space-y-8 lg:space-y-0">
         <div className="bg-[#f5f5f5] border-black border-[3px] rounded-xl p-6 max-lg:mx-auto text-2xl md:text-3xl h-full lg:h-80 w-11/12 lg:w-3/4 xl:w-[620px] 2xl:w-[88%] lg:ml-20 space-y-6 py-12" id="info">
-            <p className="text-nowrap" id="type">{pokeType}</p>
-            <p>{location}</p>
+            <p className="text-nowrap" id="type">{`TYPES- ${pokeType}`}</p>
+            <p className="text-nowrap">{`LOCATION- ${location}`}</p>
             <p className="text-nowrap">{`WEIGHT- ${pokemon?.weight ? Math.round((pokemon?.weight) / 4.536) : "N/A"} LBS.`}</p>
             <p className="text-nowrap">{`HEIGHT- ${pokemon?.height ? Math.round((pokemon.height / 3.048)) : "N/A"} FT.`}</p>
         </div>
     <div className="flex space-x-5 max-lg:justify-center lg:space-x-4 space-y-0 ">
         <div className="bg-[#f5f5f5] border-black border-[3px] rounded-xl p-6 text-xl md:text-3xl h-72 md:h-80 w-[45%] lg:w-5/12 overflow-y-scroll space-y-5" id="moves">
-            <p className="text-3xl">{`MOVES: ${moves}`}</p>
+            <p className="text-4xl">{`MOVES: ${moves}`}</p>
         </div>
         <div className="bg-[#f5f5f5] border-black border-[3px] rounded-xl p-6 text-xl md:text-3xl h-72 md:h-80 w-[45%] lg:w-5/12 space-y-4 overflow-y-auto" id="abilities">
             <p>ABILITIES:</p>
-            <p className="ml-2" id="ability1">OverGrow</p>
-            <p className="ml-2 text-nowrap" id="ability2">Chlorophyll</p>
-            <p className="text-nowrap pt-5 ml-2" id="hiddenAbility"></p>
+            <p className="ml-2" id="ability1">{abilities}</p>
         </div>
     </div>
     </div>

@@ -14,11 +14,11 @@ export const getRandomPokemon = async() => {
     return pokedata;
 }
 
-export const locatePokemon = async(pokemon: string | number) => {
+export const locatePokemon = async(pokemon: string) => {
     const promise = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}/encounters`)
     const data = await promise.json()
     console.log(data)
-    return data[0]?.location_area ? data[0].location_area.name.toUpperCase().replaceAll("-", " ") : "N/A"
+    return data
 }
 
 
