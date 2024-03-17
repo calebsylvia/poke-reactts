@@ -187,7 +187,7 @@ export interface IPokemon {
     type: Species;
   }
   
-  export interface IEvoultions {
+  export interface IEvolutions {
     baby_trigger_item: null;
     chain:             Chain;
     id:                number;
@@ -225,3 +225,34 @@ export interface IPokemon {
     name: string;
     url:  string;
   }
+
+
+export interface ILocationArray {
+    [index: number]: ILocation
+}
+
+
+export interface ILocation {
+    location_area:   LocationArea;
+    version_details: VersionDetail[];
+}
+
+export interface LocationArea {
+    name: string;
+    url:  string;
+}
+
+export interface VersionDetail {
+    encounter_details: EncounterDetail[];
+    max_chance:        number;
+    version:           LocationArea;
+}
+
+export interface EncounterDetail {
+    chance:           number;
+    condition_values: LocationArea[];
+    max_level:        number;
+    method:           LocationArea;
+    min_level:        number;
+}
+
