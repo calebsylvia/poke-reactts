@@ -7,6 +7,7 @@ import minus from '../Assets/MinusCircle.png'
 import { locatePokemon, getData, getRandomPokemon } from '../DataServices/DataCall'
 import { IPokemon, Ability } from '../Interfaces/interfaces'
 import './PokeSearch.css'
+import { saveLocal } from '../Utilities/ls'
 
 
 
@@ -30,7 +31,7 @@ const PokeSearch = () => {
   
 
   const handleFavorite = () => {
-
+        saveLocal(pokeName)
   }
 
   const handleRandom = () => {
@@ -73,6 +74,7 @@ const PokeSearch = () => {
       let pokeTypeDisplay = pokemonType.map(e => (e.type.name).toUpperCase())
       setPokeType(pokeTypeDisplay.join(" "))
       
+      setPokeName(pokemon.name)
     }
 
     if(pokemon && pokemon.sprites.other && shiny == false){
